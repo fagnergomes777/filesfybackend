@@ -7,7 +7,7 @@
     "start": "concurrently \"npm run server:dev\" \"npm run electron:dev\"",
     "start:web": "concurrently \"npm run server:dev\" \"npm run frontend:dev\"",
     "dev:web": "concurrently \"npm run server:dev\" \"npm run frontend:dev\"",
-    "electron:dev": "electron ..",
+    "electron:dev": "electron ../filesfyfrontend",
     "server:dev": "node server.js",
     "frontend:dev": "node ../filesfyfrontend/server.js",
     "init-db": "node init.js"
