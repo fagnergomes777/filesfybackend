@@ -89,11 +89,27 @@ jobs:
             az webapp start --name filesfy --resource-group "$RG"
           fi
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'filesfy'
-          slot-name: 'Production'
-          package: release.zip
+      - name: Inspect deployment zip
+        run: |
+          ls -lh release.zip
+          unzip -l release.zip | sed -n '1,120p'
+
+      - name: Deploy with Azure CLI (zip)
+        run: |
+          RG=$(az resource list --name filesfy --resource-type "Microsoft.Web/sites" --query "[0].resourceGroup" -o tsv)
+          az webapp deploy \
+            --name filesfy \
+            --resource-group "$RG" \
+            --src-path release.zip \
+            --type zip \
+            --restart true
+
+      - name: Show deployment diagnostics on failure
+        if: failure()
+        run: |
+          RG=$(az resource list --name filesfy --resource-type "Microsoft.Web/sites" --query "[0].resourceGroup" -o tsv)
+          echo "=== APP STATE ==="
+          az webapp show --name filesfy --resource-group "$RG" --query "{state:state,defaultHostName:defaultHostName}" -o json
+          echo "=== DEPLOYMENT LOGS ==="
+          az webapp log deployment list --name filesfy --resource-group "$RG" -o table || true
           
