@@ -73,7 +73,11 @@ jobs:
 
       - name: Ensure App Service is running
         run: |
-          RG=$(az webapp show --name filesfy --query resourceGroup -o tsv)
+          RG=$(az resource list --name filesfy --resource-type "Microsoft.Web/sites" --query "[0].resourceGroup" -o tsv)
+          if [ -z "$RG" ]; then
+            echo "Resource group não encontrado para o app filesfy"
+            exit 1
+          fi
           STATE=$(az webapp show --name filesfy --resource-group "$RG" --query state -o tsv)
           echo "Current state: $STATE"
           if [ "$STATE" != "Running" ]; then
