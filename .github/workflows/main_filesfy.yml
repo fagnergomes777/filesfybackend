@@ -88,6 +88,13 @@ jobs:
           for attempt in $(seq 1 12); do
             STATE=$(az webapp show --name filesfy --resource-group "$RG" --query state -o tsv)
             echo "Attempt $attempt - current state: $STATE"
+            if [ "$STATE" = "QuotaExceeded" ]; then
+              echo "App Service em QuotaExceeded. O deploy não pode continuar até ajustar cota/plano."
+              PLAN_ID=$(az webapp show --name filesfy --resource-group "$RG" --query serverFarmId -o tsv)
+              PLAN_NAME=$(basename "$PLAN_ID")
+              az appservice plan show --name "$PLAN_NAME" --resource-group "$RG" --query "{name:name,sku:sku,state:status,kind:kind}" -o json || true
+              exit 1
+            fi
             if [ "$STATE" = "Running" ]; then
               break
             fi
@@ -122,6 +129,10 @@ jobs:
         run: |
           echo "=== APP STATE ==="
           az webapp show --name filesfy --resource-group "$RG" --query "{state:state,defaultHostName:defaultHostName}" -o json
+          echo "=== APP SERVICE PLAN ==="
+          PLAN_ID=$(az webapp show --name filesfy --resource-group "$RG" --query serverFarmId -o tsv)
+          PLAN_NAME=$(basename "$PLAN_ID")
+          az appservice plan show --name "$PLAN_NAME" --resource-group "$RG" --query "{name:name,sku:sku,state:status,kind:kind}" -o json || true
           echo "=== DEPLOYMENT LOGS ==="
           az webapp log deployment list --name filesfy --resource-group "$RG" -o table || true
           
