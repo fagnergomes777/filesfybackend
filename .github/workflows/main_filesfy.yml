@@ -19,41 +19,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          node-version: '24.x'
 
-      - name: Install dependencies and run checks
+      - name: npm install, build, and test
         run: |
-          npm ci
+          npm install
           npm run build --if-present
           npm run test --if-present
-
-      - name: Prepare deployment package
-        run: |
-          mkdir -p release
-          cp package.json release/
-          cp package-lock.json release/
-          cp server.js release/
-          cp init.js release/
-          cp migrate.js release/
-          cp -r config release/config
-          cp -r controllers release/controllers
-          cp -r models release/models
-          cp -r routes release/routes
-          cp -r migrations release/migrations
-          cp .env.example release/.env.example
-
-      - name: Create release zip
-        run: |
-          cd release
-          zip -r ../release.zip .
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -67,72 +47,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: .
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_6E860139D230402AB119CA15C6C97286 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_626FBA0B1CD342E7B69D3E4FD56067CA }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5432EDFB59CE4C34B5B4802771D41220 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CEF43E18E8DC4EE28847B5CC7109186B }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EB409FFA428E4017AE49FE8C1B1CCCC8 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_00F7CBEC3C324445A75EAD738AA82948 }}
 
-      - name: Ensure App Service is running
-        run: |
-          RG=$(az resource list --name filesfy --resource-type "Microsoft.Web/sites" --query "[0].resourceGroup" -o tsv)
-          if [ -z "$RG" ]; then
-            echo "Resource group não encontrado para o app filesfy"
-            exit 1
-          fi
-          echo "RG=$RG" >> "$GITHUB_ENV"
-
-          for attempt in $(seq 1 12); do
-            STATE=$(az webapp show --name filesfy --resource-group "$RG" --query state -o tsv)
-            echo "Attempt $attempt - current state: $STATE"
-            if [ "$STATE" = "QuotaExceeded" ]; then
-              echo "App Service em QuotaExceeded. O deploy não pode continuar até ajustar cota/plano."
-              PLAN_ID=$(az webapp show --name filesfy --resource-group "$RG" --query serverFarmId -o tsv)
-              PLAN_NAME=$(basename "$PLAN_ID")
-              az appservice plan show --name "$PLAN_NAME" --resource-group "$RG" --query "{name:name,sku:sku,state:status,kind:kind}" -o json || true
-              exit 1
-            fi
-            if [ "$STATE" = "Running" ]; then
-              break
-            fi
-            az webapp start --name filesfy --resource-group "$RG"
-            sleep 10
-          done
-
-          FINAL_STATE=$(az webapp show --name filesfy --resource-group "$RG" --query state -o tsv)
-          echo "Final state before deploy: $FINAL_STATE"
-          if [ "$FINAL_STATE" != "Running" ]; then
-            echo "App Service continua parado após tentativas de start. Abortando deploy."
-            az webapp show --name filesfy --resource-group "$RG" --query "{state:state,enabledHostNames:enabledHostNames,defaultHostName:defaultHostName}" -o json
-            exit 1
-          fi
-
-      - name: Inspect deployment zip
-        run: |
-          ls -lh release.zip
-          unzip -l release.zip | sed -n '1,120p'
-
-      - name: Deploy with Azure CLI (zip)
-        run: |
-          az webapp deploy \
-            --name filesfy \
-            --resource-group "$RG" \
-            --src-path release.zip \
-            --type zip \
-            --restart true
-
-      - name: Show deployment diagnostics on failure
-        if: failure()
-        run: |
-          echo "=== APP STATE ==="
-          az webapp show --name filesfy --resource-group "$RG" --query "{state:state,defaultHostName:defaultHostName}" -o json
-          echo "=== APP SERVICE PLAN ==="
-          PLAN_ID=$(az webapp show --name filesfy --resource-group "$RG" --query serverFarmId -o tsv)
-          PLAN_NAME=$(basename "$PLAN_ID")
-          az appservice plan show --name "$PLAN_NAME" --resource-group "$RG" --query "{name:name,sku:sku,state:status,kind:kind}" -o json || true
-          echo "=== DEPLOYMENT LOGS ==="
-          az webapp log deployment list --name filesfy --resource-group "$RG" -o table || true
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'filesfy'
+          slot-name: 'Production'
+          package: .
           
