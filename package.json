@@ -4,7 +4,8 @@
   "private": true,
   "main": "../filesfyelectron/main.js",
   "scripts": {
-    "start": "concurrently \"npm run server:dev\" \"npm run electron:dev\"",
+    "start": "node server.js",
+    "start:desktop": "concurrently \"npm run server:dev\" \"npm run electron:dev\"",
     "start:web": "concurrently \"npm run server:dev\" \"npm run frontend:dev\"",
     "dev:web": "concurrently \"npm run server:dev\" \"npm run frontend:dev\"",
     "electron:dev": "electron ../filesfyelectron",

@@ -16,10 +16,13 @@ psql -U postgres -d filesfy_db -f backend/migrations/001_create_tables.sql
 # 3. Inserir planos
 psql -U postgres -d filesfy_db -c "INSERT INTO plano (nome, limite_restauracoes, valor, ativo) VALUES ('FREE', 5, 0.00, true), ('PRO', NULL, 29.90, true) ON CONFLICT (nome) DO NOTHING;"
 
-# 4. Iniciar versão Desktop (Electron com recuperação)
+# 4. Iniciar backend API
 npm start
 
-# 5. Iniciar versão Web (apenas planos)
+# 5. Iniciar versão Desktop (Electron com recuperação)
+npm run start:desktop
+
+# 6. Iniciar versão Web (apenas planos)
 npm run start:web
 ```
 
@@ -121,7 +124,8 @@ frontend/            # Frontend Web
 
 ```bash
 # Desenvolvimento
-npm start              # Inicia versão Desktop (Electron)
+npm start              # Inicia backend API (porta 3001)
+npm run start:desktop  # Inicia versão Desktop (Electron)
 npm run start:web      # Inicia versão Web (porta 3000)
 npm run dev:web        # Alias para start:web
 

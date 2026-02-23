@@ -45,7 +45,8 @@ app.use((err, req, res) => {
 pool.query('SELECT NOW()', (err) => {
   if (err) {
     console.error('❌ Erro ao conectar ao PostgreSQL:', err.message);
-    process.exit(1);
+    console.warn('⚠️ Servidor iniciado sem conexão com PostgreSQL');
+    return;
   }
   console.log('✅ Conexão PostgreSQL estabelecida');
 });
