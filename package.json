@@ -2,14 +2,14 @@
   "name": "filesfy-recuperacao-dados",
   "version": "0.1.0",
   "private": true,
-  "main": "../filesfyelectron/main.js",
   "scripts": {
     "start": "node server.js",
-    "start:desktop": "concurrently \"npm run server:dev\" \"npm run electron:dev\"",
-    "start:web": "concurrently \"npm run server:dev\" \"npm run frontend:dev\"",
-    "dev:web": "concurrently \"npm run server:dev\" \"npm run frontend:dev\"",
+    "dev": "node server.js",
+    "dev:desktop": "concurrently \"npm run dev\" \"npm run electron:dev\"",
+    "dev:web": "concurrently \"npm run dev\" \"npm run frontend:dev\"",
+    "start:desktop": "npm run dev:desktop",
+    "start:web": "npm run dev:web",
     "electron:dev": "electron ../filesfyelectron",
-    "server:dev": "node server.js",
     "frontend:dev": "node ../filesfyfrontend/server.js",
     "init-db": "node init.js"
   },
@@ -26,7 +26,7 @@
     "stripe": "^14.0.0",
     "tedious": "^19.2.0"
   },
-    "devDependencies": {
+  "devDependencies": {
     "concurrently": "^8.2.1",
     "electron": "^40.0.0"
   }

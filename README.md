@@ -11,7 +11,7 @@ Sistema completo de gerenciamento de planos e recuperação de arquivos com duas
 npm install
 
 # 2. Inicializar banco de dados
-psql -U postgres -d filesfy_db -f backend/migrations/001_create_tables.sql
+psql -U postgres -d filesfy_db -f migrations/001_create_tables.sql
 
 # 3. Inserir planos
 psql -U postgres -d filesfy_db -c "INSERT INTO plano (nome, limite_restauracoes, valor, ativo) VALUES ('FREE', 5, 0.00, true), ('PRO', NULL, 29.90, true) ON CONFLICT (nome) DO NOTHING;"
@@ -50,7 +50,7 @@ FRONTEND_URL=http://localhost:3000
 ## 📁 Estrutura do Projeto
 
 ```
-backend/              # Express API (porta 3001)
+filesfybackend/       # Express API + orquestração (porta 3001)
   ├── server.js       # Servidor principal
   ├── config/         # Configuração (database)
   ├── controllers/    # Lógica de negócio
@@ -58,18 +58,11 @@ backend/              # Express API (porta 3001)
   ├── routes/         # Endpoints
   └── migrations/     # Schema SQL
 
-electron/            # Electron main process
+filesfyelectron/      # Electron main process
   ├── main.js         # Processo principal do Electron
   └── preload.js      # Script de preload
 
-src/                 # Frontend Electron (Desktop)
-  ├── index.html      # Interface principal Desktop
-  ├── renderer.js     # Lógica da aplicação Desktop
-  ├── api.js          # Cliente HTTP
-  ├── auth.js         # Autenticação
-  └── styles.css      # Estilos Desktop
-
-frontend/            # Frontend Web
+filesfyfrontend/      # Frontend Web
   ├── server.js       # Servidor estático (porta 3000)
   └── public/         # Arquivos públicos da versão Web
       ├── index.html  # Interface Web
@@ -123,11 +116,13 @@ frontend/            # Frontend Web
 ## 🖥️ Scripts Disponíveis
 
 ```bash
-# Desenvolvimento
-npm start              # Inicia backend API (porta 3001)
-npm run start:desktop  # Inicia versão Desktop (Electron)
-npm run start:web      # Inicia versão Web (porta 3000)
-npm run dev:web        # Alias para start:web
+# No filesfybackend/
+npm start              # Backend API (porta 3001)
+npm run dev            # Alias para rodar somente o backend
+npm run dev:desktop    # Backend + Electron (Desktop)
+npm run dev:web        # Backend + Web (porta 3000)
+npm run start:desktop  # Alias para dev:desktop
+npm run start:web      # Alias para dev:web
 
 # Servidores individuais
 npm run server:dev     # Backend API (porta 3001)
