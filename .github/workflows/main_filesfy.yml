@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     env:
-      APP_NAME: filesfy-g2g3grduhhbvaggm
+      APP_NAME: filesfy
       RG: ${{ secrets.AZURE_RESOURCE_GROUP }}
     permissions:
       id-token: write
