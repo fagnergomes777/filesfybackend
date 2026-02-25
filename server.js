@@ -36,7 +36,7 @@ app.use('/api/recovery', recoveryRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 app.get('/api/test', (req, res) => {
-  res.json({ status: 'OK', message: 'Test route is working' });
+  res.json({ status: 'OK', message: 'A rota de teste está funcionando.' });
 });
 app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada' }));
 app.use((err, req, res) => {
