@@ -35,6 +35,9 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/recovery', recoveryRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
+app.get('/api/test', (req, res) => {
+  res.json({ status: 'OK', message: 'Test route is working' });
+});
 app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada' }));
 app.use((err, req, res) => {
   console.error('Erro:', err);
