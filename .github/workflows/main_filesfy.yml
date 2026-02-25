@@ -44,6 +44,11 @@ jobs:
           cp -r migrations release/migrations
           cp .env.example release/.env.example
 
+      - name: Install production dependencies in release
+        run: |
+          cd release
+          npm ci --omit=dev
+
       - name: Create release zip
         run: |
           cd release
@@ -126,7 +131,7 @@ jobs:
           az webapp config appsettings set \
             --name "$APP_NAME" \
             --resource-group "$RG" \
-            --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true NPM_CONFIG_PRODUCTION=true WEBSITE_NODE_DEFAULT_VERSION=20.0.0 WEBSITE_RUN_FROM_PACKAGE=1
+            --settings SCM_DO_BUILD_DURING_DEPLOYMENT=false NPM_CONFIG_PRODUCTION=true WEBSITE_NODE_DEFAULT_VERSION=20.0.0 WEBSITE_RUN_FROM_PACKAGE=1
 
       - name: Deploy with Azure CLI (zip)
         run: |
@@ -135,7 +140,8 @@ jobs:
             --resource-group "$RG" \
             --src-path release.zip \
             --type zip \
-            --restart true
+            --restart true \
+            --timeout 1800
 
       - name: Download application logs (on failure)
         if: failure()
@@ -154,11 +160,17 @@ jobs:
           az webapp restart --name "$APP_NAME" --resource-group "$RG"
           sleep 20
 
+          rm -f logs.zip appservice-logs.zip || true
+
           az webapp log download \
             --name "$APP_NAME" \
-            --resource-group "$RG" \
-            --log-file appservice-logs.zip || true
-          ls -lh appservice-logs.zip || true
+            --resource-group "$RG" || true
+
+          if [ -f logs.zip ]; then
+            mv logs.zip appservice-logs.zip
+          fi
+
+          ls -lh *.zip || true
 
       - name: Upload application logs artifact
         if: failure()

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "node -e \"console.log('build: nada para compilar (backend Node/Express)')\"",
     "start": "node server.js",
     "dev": "node server.js",
     "dev:desktop": "concurrently \"npm run dev\" \"npm run electron:dev\"",
