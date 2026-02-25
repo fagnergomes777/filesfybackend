@@ -101,21 +101,9 @@ jobs:
             echo "Attempt $attempt - current state: $STATE"
             if [ "$STATE" = "QuotaExceeded" ]; then
               echo "App Service em QuotaExceeded. O deploy não pode continuar até ajustar cota/plano."
-              echo "=== WEBAPP (resumo) ==="
-              az webapp show --name "$APP_NAME" --resource-group "$RG" --query "{state:state,defaultHostName:defaultHostName,usageState:usageState,serverFarmId:serverFarmId}" -o json || true
-
-              PLAN_ID=$(az webapp show --name "$APP_NAME" --resource-group "$RG" --query serverFarmId -o tsv 2>/dev/null || true)
-              if [ -n "$PLAN_ID" ] && [ "$PLAN_ID" != "null" ]; then
-                echo "=== APP SERVICE PLAN (por ID) ==="
-                az appservice plan show --ids "$PLAN_ID" --query "{name:name,sku:sku,state:status,kind:kind,location:location,resourceGroup:resourceGroup}" -o json || true
-              else
-                echo "Não foi possível obter serverFarmId. Mostrando webapp completo para diagnóstico:"
-                az webapp show --name "$APP_NAME" --resource-group "$RG" -o json || true
-              fi
-
-              echo "\nComo resolver (mais comum): o App Service Plan está em Free/Shared e estourou a cota."
-              echo "- Opção 1: aguardar o reset da cota (geralmente diário, no plano Free)."
-              echo "- Opção 2 (recomendado): subir o SKU do App Service Plan (ex.: B1 ou superior)."
+              PLAN_ID=$(az webapp show --name "$APP_NAME" --resource-group "$RG" --query serverFarmId -o tsv)
+              PLAN_NAME=$(basename "$PLAN_ID")
+              az appservice plan show --name "$PLAN_NAME" --resource-group "$RG" --query "{name:name,sku:sku,state:status,kind:kind}" -o json || true
               exit 1
             fi
             if [ "$STATE" = "Running" ]; then
