@@ -42,7 +42,8 @@ router.get('/plans', async (req, res) => {
         discount: '20%',
         interval: 'mês',
         duration: 'primeiro mês',
-        button: 'Fazer Upgrade PRO',
+        button: '🔐 Fazer Login',
+        badge: 'Mais Popular',
         storage: 5,
         recoveries: 50,
         support: '24/7 por email',
@@ -52,6 +53,31 @@ router.get('/plans', async (req, res) => {
           { name: 'Histórico 90 dias', included: true },
           { name: 'Sem anúncios', included: true },
           { name: 'Armazenamento 5GB', included: true },  
+          { name: 'Varreduras ilimitadas', included: true },
+          { name: 'Sem limite de arquivos', included: true },
+          { name: 'Suporte por email', included: true },
+          { name: 'Atualizações Automáticas', included: true },
+        ]
+      },
+      {
+        id: 'pro_annual',
+        name: 'Filesfy PRO Anual',
+        price: 12999,
+        originalPrice: 19188,
+        discount: '32%',
+        interval: 'ano',
+        duration: 'cobrança anual',
+        button: '🔐 Fazer Login',
+        badge: 'Melhor Custo-Benefício',
+        storage: 5,
+        recoveries: 50,
+        support: '24/7 por email',
+        features: [
+          { name: 'Limite 128GB por varredura', included: true },
+          { name: 'Recuperação avançada', included: true },
+          { name: 'Histórico 90 dias', included: true },
+          { name: 'Sem anúncios', included: true },
+          { name: 'Armazenamento 5GB', included: true },
           { name: 'Varreduras ilimitadas', included: true },
           { name: 'Sem limite de arquivos', included: true },
           { name: 'Suporte por email', included: true },
@@ -101,7 +127,7 @@ router.post('/subscribe', async (req, res) => {
     if (!userId) return res.status(401).json({ error: 'Usuário não identificado' });
     if (!planId) return res.status(400).json({ error: 'Plano não especificado' });
 
-    const planMap = { 'free': 'FREE', 'pro': 'PRO', 'enterprise': 'ENTERPRISE' };
+    const planMap = { 'free': 'FREE', 'pro': 'PRO', 'pro_annual': 'PRO', 'enterprise': 'ENTERPRISE' };
     const planType = planMap[planId] || 'FREE';
 
     const subscription = await Subscription.updatePlan(userId, planType);

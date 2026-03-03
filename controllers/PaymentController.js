@@ -10,7 +10,13 @@ class PaymentController {
       
       if (!userId || !planType) return res.status(400).json({ error: 'Dados incompletos' });
 
-      const amount = planType === 'PRO' ? 1599 : 0;
+      const planConfig = {
+        PRO: { amount: 1599, subscriptionPlan: 'PRO' },
+        PRO_ANNUAL: { amount: 12999, subscriptionPlan: 'PRO' }
+      };
+
+      const selectedPlan = planConfig[planType];
+      const amount = selectedPlan ? selectedPlan.amount : 0;
       if (amount === 0) return res.status(400).json({ error: 'Plano FREE não requer pagamento' });
 
       // Criar pagamento no banco (sem Stripe se chave inválida)
@@ -21,12 +27,12 @@ class PaymentController {
         // Simular aprovação automática
         const updatedPayment = await Payment.updateStatus(payment.id, 'pago');
         
-        const subscription = await Subscription.updatePlan(userId, 'PRO');
+        const subscription = await Subscription.updatePlan(userId, selectedPlan.subscriptionPlan);
         const user = await User.findById(userId);
         const token = jwt.sign({
           userId,
           email: user?.email || '',
-          plan: 'PRO'
+          plan: selectedPlan.subscriptionPlan
         }, process.env.JWT_SECRET || 'seu_secret', { expiresIn: '7d' });
 
         return res.json({ 
