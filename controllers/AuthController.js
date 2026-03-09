@@ -1,11 +1,12 @@
-const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('node:crypto');
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
+const { initializeFirebaseAdmin, admin } = require('../config/firebaseAdmin');
 
-const client = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
+// Firebase Admin é usado para verificar os ID Tokens do Google
+// Não precisamos mais de OAuth2Client nem de GOOGLE_CLIENT_ID no frontend
 
 class AuthController {
   static isTestLoginAllowed() {
@@ -52,7 +53,7 @@ class AuthController {
         userId: user.id, 
         email: user.email, 
         plan: subscription?.tipo_plano || 'FREE' 
-      }, process.env.JWT_SECRET || 'seu_secret', { expiresIn: '7d' });
+      }, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345', { expiresIn: '7d' });
 
       res.json({
         token,
@@ -100,7 +101,7 @@ class AuthController {
         userId: user.id, 
         email: user.email, 
         plan: subscription?.tipo_plano || 'FREE' 
-      }, process.env.JWT_SECRET || 'seu_secret', { expiresIn: '7d' });
+      }, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345', { expiresIn: '7d' });
 
       res.json({
         token,
@@ -126,18 +127,23 @@ class AuthController {
     try {
       const { token } = req.body;
       if (!token) return res.status(400).json({ error: 'Token não fornecido' });
-      if (!client) return res.status(400).json({ error: 'Google OAuth não configurado' });
 
-      const ticket = await client.verifyIdToken({ idToken: token, audience: process.env.GOOGLE_CLIENT_ID });
-      const { sub: googleId, email, name, picture } = ticket.getPayload();
+      // Inicializar Firebase Admin e verificar o ID Token emitido pelo Firebase Auth
+      initializeFirebaseAdmin();
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const { uid: googleId, email, name, picture } = decodedToken;
 
       let user = await User.findByGoogleId(googleId);
       if (!user) {
-        user = await User.create(googleId, email, name, picture);
+        user = await User.create(googleId, email, name || email.split('@')[0], picture || null);
         await Subscription.create(user.id, 'FREE');
       }
 
-      const jwtToken = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET || 'seu_secret', { expiresIn: '7d' });
+      const jwtToken = jwt.sign(
+        { userId: user.id, email: user.email },
+        process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345',
+        { expiresIn: '7d' }
+      );
       const subscription = await Subscription.findByUserId(user.id);
 
       res.json({
@@ -147,7 +153,7 @@ class AuthController {
       });
     } catch (error) {
       console.error('Erro Google login:', error.message);
-      res.status(401).json({ error: 'Autenticação falhou' });
+      res.status(401).json({ error: 'Autenticação falhou: ' + error.message });
     }
   }
 
@@ -186,7 +192,7 @@ class AuthController {
         plan: subscription?.tipo_plano || 'FREE',
         testUser: isMock,
       };
-      const jwtToken = jwt.sign(tokenPayload, process.env.JWT_SECRET || 'seu_secret', { expiresIn: '7d' });
+      const jwtToken = jwt.sign(tokenPayload, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345', { expiresIn: '7d' });
 
       res.json({
         token: jwtToken,
@@ -210,7 +216,7 @@ class AuthController {
           plan: 'FREE',
           testUser: true,
         };
-        const jwtToken = jwt.sign(tokenPayload, process.env.JWT_SECRET || 'seu_secret', { expiresIn: '7d' });
+        const jwtToken = jwt.sign(tokenPayload, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345', { expiresIn: '7d' });
         return res.json({
           token: jwtToken,
           user: { id: user.id, email: user.email, name: user.nome, avatar_url: user.avatar_url },
@@ -228,7 +234,7 @@ class AuthController {
       const token = req.headers.authorization?.split(' ')[1];
       if (!token) return res.status(401).json({ error: 'Token não fornecido' });
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'seu_secret');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345');
 
       if (decoded?.testUser) {
         return res.json({
