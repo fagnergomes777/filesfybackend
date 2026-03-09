@@ -93,7 +93,20 @@ router.get('/plans', async (req, res) => {
 
 router.get('/current', async (req, res) => {
   try {
-    const userId = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization || '';
+    if (!authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Não autenticado' });
+    }
+
+    const token = authHeader.slice(7);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345');
+    } catch (e) {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    const userId = decoded.userId;
     if (!userId) return res.status(401).json({ error: 'Não autenticado' });
     
     const subscription = await Subscription.findByUserId(userId);
@@ -116,7 +129,7 @@ router.post('/subscribe', async (req, res) => {
     let decoded;
     
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'sua-chave-secreta-aqui');
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345');
     } catch (error) {
       return res.status(401).json({ error: 'Token inválido' });
     }
@@ -137,7 +150,7 @@ router.post('/subscribe', async (req, res) => {
       userId, 
       email: userEmail, 
       plan: planType 
-    }, process.env.JWT_SECRET || 'sua-chave-secreta-aqui', { expiresIn: '7d' });
+    }, process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345', { expiresIn: '7d' });
     
     res.json({ 
       success: true, 
