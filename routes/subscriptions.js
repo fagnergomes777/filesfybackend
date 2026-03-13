@@ -60,7 +60,7 @@ router.get('/plans', async (req, res) => {
         ]
       },
       {
-        id: 'pro_annual',
+        id: 'anual',
         name: 'Filesfy PRO Anual',
         price: 12999,
         originalPrice: 19188,
