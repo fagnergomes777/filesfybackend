@@ -62,26 +62,24 @@ router.get('/plans', async (req, res) => {
       {
         id: 'anual',
         name: 'Filesfy PRO Anual',
-        price: 12999,
-        originalPrice: 19188,
-        discount: '32%',
+        price: 20930,
+        originalPrice: 29999,
+        discount: '30%',
         interval: 'ano',
-        duration: 'cobrança anual',
-        button: '🔐 Fazer Login',
+        duration: '12 meses',
+        button: 'Assinar Anual',
         badge: 'Melhor Custo-Benefício',
         storage: 5,
         recoveries: 50,
         support: '24/7 por email',
         features: [
-          { name: 'Limite 128GB por varredura', included: true },
-          { name: 'Recuperação avançada', included: true },
-          { name: 'Histórico 90 dias', included: true },
-          { name: 'Sem anúncios', included: true },
-          { name: 'Armazenamento 5GB', included: true },
           { name: 'Varreduras ilimitadas', included: true },
-          { name: 'Sem limite de arquivos', included: true },
+          { name: 'Arquivos ilimitados', included: true },
+          { name: 'Recuperação avançada', included: true },
+          { name: 'Sem anúncios', included: true },
+          { name: 'Suporte prioritário', included: true },
           { name: 'Suporte por email', included: true },
-          { name: 'Atualizações Automáticas', included: true },
+          { name: 'Suporte por telefone', included: true }
         ]
       }
     ];
