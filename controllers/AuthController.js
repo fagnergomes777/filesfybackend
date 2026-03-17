@@ -136,8 +136,8 @@ class AuthController {
         subscription: { id: subscription?.id, plan_type: subscription?.tipo_plano, status: subscription?.status }
       });
     } catch (error) {
-      console.error('Erro Google login:', error.message);
-      res.status(401).json({ error: 'Autenticação falhou: ' + error.message });
+      console.error('Erro Google login (detalhes):', error);
+      res.status(401).json({ error: 'Autenticação falhou: ' + error.message, details: error.toString() });
     }
   }
 
