@@ -17,15 +17,24 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Permite conexões sem origem (ex: curl, postman, electron)
     if (!origin) {
       return callback(null, true);
     }
-    if (allowedOrigins.includes(origin)) {
+    
+    // Tratamento para evitar falha por trailing slash ('/') e garantir que libere origens válidas
+    const cleanOrigin = origin.replace(/\/$/, "");
+    const allowed = allowedOrigins.map(o => o.replace(/\/$/, ""));
+    
+    if (allowed.includes(cleanOrigin) || allowed.includes('*')) {
       return callback(null, true);
     }
+    console.warn(`[CORS Blocked] Origem não permitida: ${origin}`);
     return callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
 }));
 app.use(express.json());
 
