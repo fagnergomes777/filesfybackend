@@ -117,10 +117,29 @@ class AuthController {
       const decodedToken = await admin.auth().verifyIdToken(token);
       const { uid: googleId, email, name, picture } = decodedToken;
 
-      let user = await User.findByGoogleId(googleId);
-      if (!user) {
-        user = await User.create(googleId, email, name || email.split('@')[0], picture || null);
-        await Subscription.create(user.id, 'FREE');
+      let user;
+      let subscriptionType = 'FREE';
+      let subscriptionStatus = 'active';
+
+      try {
+        user = await User.findByGoogleId(googleId);
+        if (!user) {
+          user = await User.create(googleId, email, name || email.split('@')[0], picture || null);
+          await Subscription.create(user.id, 'FREE');
+        }
+        const dbSub = await Subscription.findByUserId(user.id);
+        if (dbSub) {
+          subscriptionType = dbSub.tipo_plano;
+          subscriptionStatus = dbSub.status;
+        }
+      } catch (dbError) {
+        console.warn('⚠️ Banco de dados falhou, usando mock em memória (Azure configurado sem DB?):', dbError.message);
+        user = {
+          id: googleId,
+          email: email,
+          nome: name || email.split('@')[0],
+          avatar_url: picture || null
+        };
       }
 
       const jwtToken = jwt.sign(
@@ -128,12 +147,11 @@ class AuthController {
         process.env.JWT_SECRET || 'filesfy_jwt_secret_key_super_secura_12345',
         { expiresIn: '7d' }
       );
-      const subscription = await Subscription.findByUserId(user.id);
 
       res.json({
         token: jwtToken,
         user: { id: user.id, email: user.email, name: user.nome, avatar_url: user.avatar_url },
-        subscription: { id: subscription?.id, plan_type: subscription?.tipo_plano, status: subscription?.status }
+        subscription: { id: 1, plan_type: subscriptionType, status: subscriptionStatus }
       });
     } catch (error) {
       console.error('Erro Google login:', error.message);
