@@ -19,7 +19,6 @@ router.get('/plans', async (req, res) => {
         discount: null,
         duration: 'Para sempre',
         button: 'Começar Grátis',
-        badge: 'Plano Básico',
         storage: 0.3,
         recoveries: 1,
         support: 'básico',
@@ -42,16 +41,19 @@ router.get('/plans', async (req, res) => {
         discount: '50%',
         interval: 'mês',
         duration: 'primeiro mês',
-        button: '🔐 Fazer Login',
+        button: 'Comprar Agora',
         badge: 'Mais Popular',
-        storage: 5,
-        recoveries: 50,
+        storage: 128,
+        recoveries: 30,
         support: '24/7 por email',
         features: [
           { name: 'Até 30 varreduras por mês', included: true },
           { name: 'Limite 128GB por varredura', included: true },
           { name: 'Recuperação avançada', included: true },
+          { name: 'Histórico 90 dias', included: true },
           { name: 'Sem anúncios', included: true },
+          { name: 'Armazenamento 5GB', included: true },  
+          { name: 'Varreduras ilimitadas', included: true },
           { name: 'Sem limite de arquivos', included: true },
           { name: 'Suporte por email', included: true },
         ]
@@ -63,12 +65,12 @@ router.get('/plans', async (req, res) => {
         originalPrice: 29999,
         discount: '30%',
         interval: 'ano',
-        duration: '12 meses',
-        button: '🔐 Assinar Anual',
+        duration: 'cobrança anual',
+        button: '🔐 Fazer Login',
         badge: 'Melhor Custo-Benefício',
         storage: 5,
         recoveries: 50,
-        support: 'prioritário 24/7',
+        support: '24/7 por email',
         features: [
           { name: 'Varreduras ilimitadas', included: true },
           { name: 'Arquivos ilimitados', included: true },
@@ -76,7 +78,7 @@ router.get('/plans', async (req, res) => {
           { name: 'Sem anúncios', included: true },
           { name: 'Suporte prioritário', included: true },
           { name: 'Suporte por email', included: true },
-          { name: 'Suporte por telefone', included: true }
+          { name: 'Atualizações Automáticas', included: true },
         ]
       }
     ];
