@@ -45,7 +45,7 @@ router.get('/plans', async (req, res) => {
         badge: 'Mais Popular',
         storage: 128,
         recoveries: 30,
-        support: '24/7 por email',
+        support: 'por email',
         features: [
           { name: 'Até 30 varreduras por mês', included: true },
           { name: 'Limite 128GB por varredura', included: true },
@@ -60,7 +60,7 @@ router.get('/plans', async (req, res) => {
       },
       {
         id: 'anual',
-        name: 'Filesfy PRO Anual',
+        name: 'Filesfy PREMIUM',
         price: 20930,
         originalPrice: 29999,
         discount: '30%',
@@ -70,7 +70,7 @@ router.get('/plans', async (req, res) => {
         badge: 'Melhor Custo-Benefício',
         storage: 5,
         recoveries: 50,
-        support: '24/7 por email',
+        support: 'por email',
         features: [
           { name: 'Varreduras ilimitadas', included: true },
           { name: 'Arquivos ilimitados', included: true },
