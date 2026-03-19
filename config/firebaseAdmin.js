@@ -26,6 +26,8 @@ function initializeFirebaseAdmin() {
         privateKey,
       }),
     });
+  } else if (projectId) {
+    admin.initializeApp({ projectId });
   } else {
     admin.initializeApp();
   }
